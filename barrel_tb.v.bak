@@ -20,13 +20,12 @@ reg [7:0]data_in;
 reg [2:0]sel;
 wire [7:0]data_out;
 integer i,j;
-reg errors = 0;
+integer errors;
 reg [7:0] expected;
 barrel B2(clk,reset,Load,sel,data_in,data_out);
 
 initial 
- begin 
- errors = 0;  
+ begin  
  reset <= 1;
  @(posedge clk);
  @(negedge clk) reset = 0;
@@ -35,10 +34,11 @@ initial
 //----------------Main loop------------------//
 initial 
  begin 
-#2 reset = 1;   
+  errors = 0; 
+#2 reset = 1;expected = 0;  
 #2 reset = 0;Load = 1;
  Test_Load_and_Shift();
-#2 reset = 1; expected = 0;
+#2 reset = 1;expected = 0;
 #2 reset = 0;Load = 0;
  Test_Load_and_Shift();
  
@@ -53,16 +53,13 @@ initial
 
 task Test_Load_and_Shift();
  begin 
-   
-
-
    for( i = 0; i < 3 ; i = i + 1)
 	 begin 
 	  data_in = {$random}%256;
 	   for( j = 0; j < 8 ; j = j + 1)
 		begin 
 		 #2 sel = j; 
-		 if(clk)
+		 if(Load)
 		  begin 
 		  expected = ( data_in << 8-sel ) | ( data_in >> sel); 
 		  end
@@ -79,8 +76,7 @@ begin
  if(actValue[7:0] != expValue[7:0])
    begin
     errors = errors + 1;
-    $display("
-     %b was %b , error collection is %d at %d",expValue,actValue,errors,$time);
+    $display("%b was %b , error collection is %d at %d",expValue,actValue,errors,$time);
    end 
 end 
 endtask
