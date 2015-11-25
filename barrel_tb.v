@@ -34,40 +34,58 @@ initial
 //----------------Main loop------------------//
 initial 
  begin 
-  errors = 0; 
-#2 reset = 1;expected = 0;  
-#2 reset = 0;Load = 1;
+ errors = 0;
+ Load = 1;
  Test_Load_and_Shift();
-#2 reset = 1;expected = 0;
-#2 reset = 0;Load = 0;
- Test_Load_and_Shift();
+
+ Load = 0;
+ Test_NO_Load_and_Shift();
  
- if(errors != 0 )
-   $printf("congraturation!! ^.^ your design that does't has errors ");  
- else 
-   $printf("Too bad!! T.T your design found %d of error ",errors);  
-   
+
  #2 $finish;
  end 
 //-------------------------------------------// 
 
 task Test_Load_and_Shift();
  begin 
+   	while(reset == 1)
+		begin	
+		verifyOutput(8'd0,data_out);	
+		end
+   
    for( i = 0; i < 3 ; i = i + 1)
 	 begin 
 	  data_in = {$random}%256;
 	   for( j = 0; j < 8 ; j = j + 1)
 		begin 
-		 #2 sel = j; 
-		 if(Load)
-		  begin 
+		 sel = j; 
 		  expected = ( data_in << 8-sel ) | ( data_in >> sel); 
-		  end
 		 #2 verifyOutput(expected,data_out);
 		end 
 	 end 
  end 
 endtask 
+
+task Test_NO_Load_and_Shift();
+ begin 
+   	while(reset == 1)
+		begin	
+		verifyOutput(8'd0,data_out);	
+		end
+   
+   for( i = 0; i < 3 ; i = i + 1)
+	 begin 
+	  data_in = {$random}%256;
+	   for( j = 0; j < 8 ; j = j + 1)
+		begin 
+		 sel = j; 
+		  expected = ( data_out << 8-sel ) | ( data_out >> sel); 
+		 #2 verifyOutput(expected,data_out);
+		end 
+	 end 
+ end 
+endtask 
+
 
 task verifyOutput;
  input[7:0] expValue;
